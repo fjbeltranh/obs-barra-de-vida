@@ -1,0 +1,1 @@
+# obs-nivel-de-vida
