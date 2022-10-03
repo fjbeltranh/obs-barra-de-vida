@@ -4,19 +4,25 @@ obs           				= obslua
 -- Variables
 
 local path = script_path(); -- el path se encuentra donde el script
-local estados = 
+local estados = {}; -- cada posición es un conjunto
+estados[1] = 
 {
-    {"1.png","1.png"},
-    {"2.gif","2.png"},
-    {"3.gif","3.png"}
+    {"1.png","1.png","1.png"},
+    {"2.gif","2.png","2.png"},
+    {"3.gif","3.png","3.png"}
 };
 
-local num_estados=table.getn(estados);
-local incremento=1;
-local DERECHA=1;
-local IZQUIERDA=2;
-local sentido=IZQUIERDA;
+local num_estados=table.getn(estados[1]);
+
+local ANIMACION_DERECHA=1;
+local ANIMACION_IZQUIERDA=2;
+local ESTATICO=3;
+
+local sentido=ESTATICO;
+
 local is_pressed=false;
+
+local nivel=3;
 
 local hotkey_minus=obs.OBS_INVALID_HOTKEY_ID;
 local hotkey_plus=obs.OBS_INVALID_HOTKEY_ID;
@@ -42,8 +48,6 @@ function script_properties()
     props = obs.obs_properties_create()
     obs.obs_properties_add_text(props, "source_name", "Nombre de la Fuente", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_int_slider(props, "nivel", "Nivel", 1, num_estados, 1)
-    obs.obs_properties_add_int_slider(props, "incremento", "Incremento", 1, 10, 1)
-    --obs.obs_properties_add_path(props, "path", "Carpeta", obs.OBS_PATH_DIRECTORY,nill, script_path())
 
     return props
 
@@ -53,8 +57,7 @@ end
   
 -- Hook: Al cargar el script
 function script_load(settings)
-
-
+    print("load")
 
     -- Hotkey minus
     hotkey_minus = obs.obs_hotkey_register_frontend("hotkey_minus", "Menos", on_hotkey_minus)
@@ -75,6 +78,7 @@ end
 -- Hook: 
 function script_save(settings)
 
+    print("save")
     -- Hotkey minus
     local hotkey_minus_array = obs.obs_hotkey_save(hotkey_minus)
     obs.obs_data_set_array(settings, "hotkey_minus", hotkey_minus_array)
@@ -92,17 +96,18 @@ end
 -- 
 function script_defaults(settings)
 
+    print("defaults")
     my_settings=settings;
 
-    local source_name_inicial="animacion";
-    local nivel_inicial = 1;      
-    nivel_anterior = nivel_inicial;
-    local incremento_inicial = 1; 
+    nivel = obs.obs_data_get_int(settings, "nivel");    
+    if(nivel==0) then nivel=1 end
+    nivel_anterior=nivel
+
+    local source_name_inicial="animacion";    
+    
 
     obs.obs_data_set_default_string(settings, "source_name", source_name_inicial)
-    obs.obs_data_set_default_int(settings, "nivel", nivel_inicial)
-    obs.obs_data_set_default_int(settings, "incremento", incremento_inicial)
-    --obs.obs_data_set_default_path(settings, "path", path)
+    obs.obs_data_set_default_int(settings, "nivel", nivel)
 
 end
 
@@ -111,13 +116,13 @@ end
 
 function script_update(settings)
 
-    print("inicio script_update")
+    print("update")
     source_name = obs.obs_data_get_string(settings, "source_name")
     nivel = obs.obs_data_get_int(settings, "nivel")
     incremento = obs.obs_data_get_int(settings, "incremento")
     is_pressed=true
-    print(nivel)
 
+    print("nivel="..nivel)
 end
 
 
@@ -127,21 +132,24 @@ function script_tick(seconds)
 
 
     if is_pressed then
-        
+        print("tick")      
         local source = obs.obs_get_source_by_name(source_name)
         if source then
 
             local source_settings=obs.obs_source_get_settings(source)
             if source_settings then
 
-                if(nivel_anterior<=nivel) then
-                    sentido=DERECHA
+                if(nivel_anterior<nivel) then
+                    sentido=ANIMACION_DERECHA
+                elseif(nivel_anterior>nivel) then
+                    sentido=ANIMACION_IZQUIERDA
                 else
-                    sentido=IZQUIERDA 
+                    sentido=ESTATICO
                 end
+
                 nivel_anterior=nivel;
 
-                obs.obs_data_set_string(source_settings, "local_file", path..estados[nivel][sentido])
+                obs.obs_data_set_string(source_settings, "local_file", path..estados[1][nivel][sentido])
                 obs.obs_source_update(source, source_settings)
 
             end
@@ -151,6 +159,7 @@ function script_tick(seconds)
         obs.obs_source_release(source)
 
     end
+
     is_pressed=false;
 
 end
@@ -163,10 +172,10 @@ end
 function on_hotkey_minus(pressed)
 
     is_pressed = pressed
-    if(pressed) then         
-        print("minus") 
+    if(pressed) then      
+        print("minus")   
         if(nivel>1) then 
-            obs.obs_data_set_int(my_settings, "nivel", nivel-incremento)
+            obs.obs_data_set_int(my_settings, "nivel", nivel-1)
             script_update(my_settings)
         else
             is_pressed=false;
@@ -180,9 +189,9 @@ function on_hotkey_plus(pressed)
 
     is_pressed = pressed
     if(pressed) then   
-        print("plus") 
+        print("plus")
         if(nivel<num_estados) then
-            obs.obs_data_set_int(my_settings, "nivel", nivel+incremento)
+            obs.obs_data_set_int(my_settings, "nivel", nivel+1)
             script_update(my_settings)
         else
             is_pressed=false;            
