@@ -1,33 +1,19 @@
-obs           				= obslua
+obs= obslua
+
 
 
 -- Variables
 
-local path = script_path(); -- el path se encuentra donde el script
-local estados = {}; -- cada posición es un conjunto
-estados[1] = 
-{
-    {"1.png","1.png","1.png"},
-    {"2.gif","2.png","2.png"},
-    {"3.gif","3.png","3.png"}
-};
 
-local num_estados=table.getn(estados[1]);
-
-local ANIMACION_DERECHA=1;
-local ANIMACION_IZQUIERDA=2;
-local ESTATICO=3;
-
-local sentido=ESTATICO;
 
 local is_pressed=false;
 
-local nivel=3;
+
 
 local hotkey_minus=obs.OBS_INVALID_HOTKEY_ID;
 local hotkey_plus=obs.OBS_INVALID_HOTKEY_ID;
 
-
+print ("base")
 
 -- Hook: La descripción que se muestra en la ventana del Script
 function script_description()
@@ -45,6 +31,7 @@ end
 -- Hook: Las propiedades definidas en la UI
 function script_properties()
 
+    print("properties")
     props = obs.obs_properties_create()
     obs.obs_properties_add_text(props, "source_name", "Nombre de la Fuente", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_int_slider(props, "nivel", "Nivel", 1, num_estados, 1)
@@ -99,16 +86,21 @@ function script_defaults(settings)
     print("defaults")
     my_settings=settings;
 
-    nivel = obs.obs_data_get_int(settings, "nivel");    
-    if(nivel==0) then nivel=1 end
-    nivel_anterior=nivel
+    -- carga la configuracion
+    local config=readJson();
+    source_name_default=config["source_name"];
+    path=config["path"]; if(path=="") then path=script_path(); end;
+    folder = config["folder"]; if(folder~="") then folder=folder.."/"; end;
+    folder_anim_mas = config["folder_anim_mas"]; if(folder_anim_mas~="") then folder_anim_mas=folder_anim_mas.."/"; end;
+    folder_anim_menos = config["folder_anim_menos"]; if(folder_anim_menos~="") then folder_anim_menos=folder_anim_menos.."/"; end;
+    folder_estatico = config["folder_estatico"]; if(folder_estatico~="") then folder_estatico=folder_estatico.."/"; end;
+    estados = config["estados"];
+    num_estados=table.getn(estados);
+    nivel_default=num_estados;
+    nivel_anterior=nivel_default
 
-    local source_name_inicial="animacion";    
-    
-
-    obs.obs_data_set_default_string(settings, "source_name", source_name_inicial)
-    obs.obs_data_set_default_int(settings, "nivel", nivel)
-
+    obs.obs_data_set_default_string(settings, "source_name", source_name_default)
+    obs.obs_data_set_default_int(settings, "nivel", nivel_default)
 end
 
 
@@ -139,17 +131,19 @@ function script_tick(seconds)
             local source_settings=obs.obs_source_get_settings(source)
             if source_settings then
 
+                local tipo="estatico"
+                local subfolder=folder_estatico;
                 if(nivel_anterior<nivel) then
-                    sentido=ANIMACION_DERECHA
+                    tipo="anim_mas";
+                    subfolder=folder_anim_mas;
                 elseif(nivel_anterior>nivel) then
-                    sentido=ANIMACION_IZQUIERDA
-                else
-                    sentido=ESTATICO
+                    tipo="anim_menos";
+                    subfolder=folder_anim_menos;
                 end
 
                 nivel_anterior=nivel;
 
-                obs.obs_data_set_string(source_settings, "local_file", path..estados[1][nivel][sentido])
+                obs.obs_data_set_string(source_settings, "local_file", path..folder..subfolder..estados[nivel][tipo])
                 obs.obs_source_update(source, source_settings)
 
             end
@@ -198,4 +192,16 @@ function on_hotkey_plus(pressed)
         end            
     end
 
+end
+
+
+function readJson()
+
+    local json = require("dkjson")
+    local json_data=obs.obs_data_create_from_json_file(script_path().."config.json");
+    local content=obs.obs_data_get_json(json_data)
+    obs.obs_data_release(json_data)
+    return json.decode(content)
+
+  
 end

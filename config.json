@@ -1,0 +1,26 @@
+{
+    "source_name":"animacion",
+    "path":"",
+    "folder":"estados",
+    "folder_anim_mas":"anim_mas",
+    "folder_anim_menos":"anim_menos",
+    "folder_estatico":"estatico",
+    "estados": 
+    [
+        {
+            "anim_mas":"",
+            "anim_menos":"1.png",
+            "estatico":"1.png"
+        },
+        {
+            "anim_mas":"2.gif",
+            "anim_menos":"2.png",
+            "estatico":"2.png"
+        },
+        {
+            "anim_mas":"3.gif",
+            "anim_menos":"",
+            "estatico":"3.png"
+        }
+    ]
+}
