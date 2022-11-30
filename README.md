@@ -3,10 +3,11 @@
 Como instalar:
 
 1. Crear una fuente de tipo multimedia en obs, posicionarla donde se quiera y desmarcar todas las casillas. Puedes llamarla por defecto "animacion"
-2. Descargar todo en una misma carpeta
-3. Editar el archivo de texto config.json según las consideraciones de más abajo. Por defecto actualmente funciona
-4. Ir a OBS>Herramientas>Script y cargar script-barra-de-vida.lua.
-5. [Opcional] Crear atajos en obs para los botones Menos y Más y asociarlos a streamdeck. Si no, puede manejarse desde la barra de nivel del apartado scripts.
+2. Crear una fuente de tipo multimedia en obs, posicionarla debajo de la anterior y desmarcar todas las casillas. Puedes llamarla por defecto "animacion-base"
+3. Descargar todo en una misma carpeta
+4. Editar el archivo de texto config.json según las consideraciones de más abajo. Por defecto actualmente funciona
+5. Ir a OBS>Herramientas>Script y cargar script-barra-de-vida.lua.
+6. [Opcional] Crear atajos en obs para los botones Menos y Más y asociarlos a streamdeck. Si no, puede manejarse desde la barra de nivel del apartado scripts.
 
 Consideraciones:
 
