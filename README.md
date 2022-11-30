@@ -3,6 +3,8 @@
 Consideraciones:
 
 * source_name es el nombre de la funte multimedia que servirá como base para las animaciones. Asegúrate de que tenga todas las propiedades desmarcadas.
+* source_base_name es el nombre de la fuente multimedia que servirá como base estática para que evitar el parpadeo al cargar en la fuente anterior. Debe ir por debajo de source_name. Asegúrate de que tenga todas las propiedades desmarcadas.
+* delay es el retardo en ms que tiene entre animaciones
 * Todo los archivos del script deben estar en la misma carpeta
 * Las imágenes, GIFs o incluso archivos de vídeos que conforman los estados de la barra están en la dirección marcada por el parámetro path (por defecto donde se encuentre el script)
 * Si se quiere reorganizar en carpetas hay que indica folder y opcionalmente folder_anim_mas, folder_anim_menos y folder_estatico.

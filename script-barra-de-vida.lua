@@ -29,6 +29,8 @@ function script_defaults(settings)
     -- carga la configuracion en variables
     local config=readJson();
     local source_name_default=config["source_name"];
+    local source_base_name_default=config["source_base_name"];
+    delay=config["delay"];
     path=config["path"]; if(path=="") then path=script_path(); end;
     folder = config["folder"]; if(folder~="") then folder=folder.."/"; end;
     folder_anim_mas = config["folder_anim_mas"]; if(folder_anim_mas~="") then folder_anim_mas=folder_anim_mas.."/"; end;
@@ -47,8 +49,8 @@ function script_defaults(settings)
 
     -- fija algunas fuentes
     obs.obs_data_set_default_string(settings, "source_name", source_name_default)
+    obs.obs_data_set_default_string(settings, "source_base_name", source_base_name_default)
     obs.obs_data_set_default_int(settings, "nivel", nivel_default)
-
     
 end
 
@@ -100,10 +102,11 @@ end
 function script_update(settings)
     
     source_name = obs.obs_data_get_string(settings, "source_name")
+    source_base_name = obs.obs_data_get_string(settings, "source_base_name")
     nivel = obs.obs_data_get_int(settings, "nivel")
     incremento = obs.obs_data_get_int(settings, "incremento")
-    is_pressed=true
-  
+    is_pressed=true    
+
 end
 
 
@@ -113,6 +116,7 @@ function script_properties()
     
     local props = obs.obs_properties_create()
     obs.obs_properties_add_text(props, "source_name", "Nombre de la Fuente", obs.OBS_TEXT_DEFAULT)
+    obs.obs_properties_add_text(props, "source_base_name", "Nombre de la Fuente Base", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_int_slider(props, "nivel", "Nivel", 1, num_estados, 1)
 
     -- obs.obs_properties_add_button(props, "menos_button", "Menos", on_hotkey_menos)
@@ -129,32 +133,56 @@ function script_tick(seconds)
 
     if is_pressed then
            
-        local source = obs.obs_get_source_by_name(source_name)
+        source = obs.obs_get_source_by_name(source_name)
+        source_base = obs.obs_get_source_by_name(source_base_name)
         if source then
 
-            local source_settings=obs.obs_source_get_settings(source)
+            source_settings=obs.obs_source_get_settings(source)
+            source_base_settings=obs.obs_source_get_settings(source_base)
             if source_settings then
 
-                local tipo="estatico"
+                local tipo="estatico";
                 local subfolder=folder_estatico;
+
                 if(nivel_anterior<nivel) then
+
                     tipo="anim_mas";
                     subfolder=folder_anim_mas;
+                    delay_source=1;
+                    delay_source_base=delay;
+
                 elseif(nivel_anterior>nivel) then
+
                     tipo="anim_menos";
                     subfolder=folder_anim_menos;
+                    delay_source=delay;
+                    delay_source_base=delay_source+100;
+
                 end
 
                 nivel_anterior=nivel;
+                                    
+                obs.obs_data_set_string(source_settings, "local_file", path..folder..subfolder..estados[nivel][tipo])                    
+                obs.timer_add(
+                    function()
+                        obs.obs_source_update(source, source_settings);
+                        obs.remove_current_callback();
+                    end, delay_source)
 
-                obs.obs_data_set_string(source_settings, "local_file", path..folder..subfolder..estados[nivel][tipo])
-                obs.obs_source_update(source, source_settings)
+                obs.obs_data_set_string(source_base_settings, "local_file", path..folder..folder_estatico..estados[nivel]["estatico"])
+                obs.timer_add(
+                    function()
+                        obs.obs_source_update(source_base, source_base_settings);
+                        obs.remove_current_callback();
+                    end, delay_source_base)
 
             end
             obs.obs_data_release(source_settings) 
+            obs.obs_data_release(source_base_settings) 
         
         end
         obs.obs_source_release(source)
+        obs.obs_source_release(source_base)
 
     end
 
@@ -163,7 +191,12 @@ function script_tick(seconds)
 end
 
 
+function updateBaseSource(surce_base, source_base_settings, file)
 
+    obs.obs_data_set_string(source_base_settings, "local_file", file)
+    obs.obs_source_update(source_base, source_base_settings)
+
+end
 
 
 -- ---------------------------------------
@@ -214,7 +247,3 @@ function readJson()
     return json.decode(content)
 
 end
-
-
-
-

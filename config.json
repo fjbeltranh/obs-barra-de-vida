@@ -1,5 +1,7 @@
 {
     "source_name":"animacion",
+    "source_base_name":"animacion-base",
+    "delay":500,
     "path":"",
     "folder":"estados",
     "folder_anim_mas":"anim_mas",
@@ -9,18 +11,28 @@
     [
         {
             "anim_mas":"",
-            "anim_menos":"1.png",
-            "estatico":"1.png"
+            "anim_menos":"R1.gif",
+            "estatico":""
         },
         {
-            "anim_mas":"2.gif",
-            "anim_menos":"2.png",
-            "estatico":"2.png"
+            "anim_mas":"S1.gif",
+            "anim_menos":"R2.gif",
+            "estatico":"E1.png"
         },
         {
-            "anim_mas":"3.gif",
+            "anim_mas":"S2.gif",
+            "anim_menos":"R3.gif",
+            "estatico":"E2.png"
+        },
+        {
+            "anim_mas":"S3.gif",
+            "anim_menos":"R4.gif",
+            "estatico":"E3.png"
+        },
+        {
+            "anim_mas":"S4.gif",
             "anim_menos":"",
-            "estatico":"3.png"
+            "estatico":"E4.png"
         }
     ]
 }
